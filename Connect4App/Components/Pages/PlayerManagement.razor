@@ -1,0 +1,38 @@
+@page "/PlayerManagement"
+
+<h3>Player Management</h3>
+
+@* @if (isLoggedIn)
+{
+    <h4>Welcome, @currentPlayer.Username!</h4>
+    <h5>Available Games:</h5>
+    <ul>
+        @foreach (var game in availableGames)
+        {
+            <li>@game.Name</li>
+        }
+    </ul>
+}
+else
+{
+    <h4>Please Log In</h4>
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label for="username">Username:</label>
+            <InputText id="username" @bind-Value="loginModel.Username" />
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <InputText id="password" type="password" @bind-Value="loginModel.Password" />
+        </div>
+        <button type="submit">Log In</button>
+    </EditForm>
+
+    @if (loginError)
+    {
+        <p class="text-danger">Invalid username or password.</p>
+    }
+} *@
