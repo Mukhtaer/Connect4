@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Connect4App")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+08a312046e4cba7926a206f6a162152cd4768583")]
 [assembly: System.Reflection.AssemblyProductAttribute("Connect4App")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Connect4App")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

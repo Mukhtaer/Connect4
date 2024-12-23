@@ -1,0 +1,147 @@
+@page "/register"
+@using Connect4App.Models
+@using Connect4App.Data
+@using Microsoft.EntityFrameworkCore
+
+<h3>Register</h3>
+<EditForm EditContext="@editContext" OnValidSubmit="HandleRegister" FormName="registerForm" class="form-container">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="validation-summary" />
+
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="registerModel.Username" class="form-control" />
+        <ValidationMessage For="@(() => registerModel.Username)" />
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <InputText id="password" type="password" @bind-Value="registerModel.Password" class="form-control" />
+        <ValidationMessage For="@(() => registerModel.Password)" />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</EditForm>
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: auto;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .btn-primary {
+        width: 100%;
+        padding: 0.5rem;
+        background-color: #007bff;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-size: 1rem;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    .validation-summary {
+        margin-bottom: 1rem;
+        color: red;
+    }
+</style>
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    private EditContext editContext = default!;
+    private ValidationMessageStore validationMessageStore = default!;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(registerModel);
+        validationMessageStore = new ValidationMessageStore(editContext);
+        editContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        validationMessageStore.Clear(e.FieldIdentifier);
+
+        if (e.FieldIdentifier.FieldName == nameof(registerModel.Username) && string.IsNullOrWhiteSpace(registerModel.Username))
+        {
+            validationMessageStore.Add(e.FieldIdentifier, "Username cannot be empty.");
+        }
+
+        if (e.FieldIdentifier.FieldName == nameof(registerModel.Password) && registerModel.Password != null && !IsValidPassword(registerModel.Password))
+        {
+            validationMessageStore.Add(e.FieldIdentifier, "Password must be at least 6 characters long.");
+        }
+
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private async Task HandleRegister()
+    {
+        // Perform server-side validation without clearing the validation message store prematurely
+        if (!editContext.Validate())
+        {
+            // Notify Blazor to display any current validation errors
+            editContext.NotifyValidationStateChanged();
+            return;
+        }
+
+        if (registerModel.Username != null && !await IsUsernameAvailable(registerModel.Username))
+        {
+            validationMessageStore.Add(() => registerModel.Username, "Username is already taken.");
+            editContext.NotifyValidationStateChanged();
+            return;
+        }
+
+        // Register the user if all validations pass
+        await RegisterUser(registerModel);
+
+        // Navigate to the login page
+        NavigationManager?.NavigateTo("/login");
+    }
+
+    private async Task<bool> IsUsernameAvailable(string username)
+    {
+        using var context = new AppDbContext();
+        return await context.Players!.AllAsync(p => p.Username != username);
+    }
+
+    private bool IsValidPassword(string password)
+    {
+        return !string.IsNullOrWhiteSpace(password) && password.Length >= 6;
+    }
+
+    private async Task RegisterUser(RegisterModel model)
+    {
+        using var context = new AppDbContext();
+        var user = new Player
+        {
+            Username = model.Username,
+            Password =  model.Password
+        };
+        context.Players?.Add(user);
+        await context.SaveChangesAsync();
+    }
+
+    private string HashPassword(string password)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = System.Text.Encoding.UTF8.GetBytes(password);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hash);
+    }
+
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+}

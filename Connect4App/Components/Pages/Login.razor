@@ -1,0 +1,51 @@
+@page "/login"
+@using Connect4App.Data
+@using Connect4App.Models
+@using Microsoft.EntityFrameworkCore
+
+<h3>Login</h3>
+
+<h5> Players In the system </h5> 
+@foreach (var player in players)
+{
+    <p>@player.Username</p>
+}
+
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" type="password" @bind-Value="loginModel.Password" />
+    </div>
+    <button type="submit">Log In</button>
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task HandleLogin()
+    {
+       
+
+       
+    }
+
+private List<Player> players = new List<Player>();
+
+protected override async Task OnInitializedAsync()
+{
+    await LoadPlayers();
+}
+
+private async Task LoadPlayers()
+{
+    using var context = new AppDbContext();
+    players = context.Players != null ? await context.Players.ToListAsync() : new List<Player>();
+}
+}

@@ -1,4 +1,7 @@
 using Connect4App.Components;
+using Connect4App.Data;
+using Connect4App.Services;
+using Connect4App.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
